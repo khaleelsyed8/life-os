@@ -1,2 +1,3 @@
-# life-os
-Building a tool for my daily tracking and chores
+# Life OS
+
+A personal operating system to manage focus, habits, diary, projects, and tools.
