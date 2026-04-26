@@ -2,40 +2,63 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Caveat:wght@400;600&display=swap" rel="stylesheet">
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <!-- ── Favicon ──────────────────────────────────────────────── -->
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-    <link rel="alternate icon" href="/favicon.ico" />  
-  <!-- Apple Touch Icon -->
-  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
-  
-  <!-- Web App Manifest -->
-  <link rel="manifest" href="/manifest.json" />
-  
-  <!-- Theme Color -->
-  <meta name="theme-color" content="#6366f1" />
-  
-  <!-- Primary Meta Tags -->
-  <title>Life OS - Your Personal Operating System</title>
-  <meta name="title" content="Life OS - Your Personal Operating System" />
-  <meta name="description" content="Manage your life across all domains with Life OS. Track habits, journal daily, manage projects, and organize your finances." />
-  
-  <!-- Open Graph / Facebook -->
-  <meta property="og:type" content="website" />
-  <meta property="og:url" content="https://your-domain.com/" />
-  <meta property="og:title" content="Life OS - Your Personal Operating System" />
-  <meta property="og:description" content="Manage your life across all domains with Life OS." />
-  <meta property="og:image" content="/og-image.png" />
-  
-  <!-- Twitter -->
-  <meta property="twitter:card" content="summary_large_image" />
-  <meta property="twitter:url" content="https://your-domain.com/" />
-  <meta property="twitter:title" content="Life OS" />
-  <meta property="twitter:description" content="Your Personal Operating System" />
-  <meta property="twitter:image" content="/og-image.png" />
-</head>
+    <link rel="alternate icon" href="/favicon.ico" />
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
+
+    <!-- ── Web App Manifest ─────────────────────────────────────── -->
+    <link rel="manifest" href="/manifest.json" />
+
+    <!-- ── Theme: dark background prevents flash of light ──────── -->
+    <meta name="theme-color" content="#0a0a0f" />
+    <meta name="color-scheme" content="dark" />
+
+    <!-- ── Fonts ────────────────────────────────────────────────── -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <!--
+      Syne       → headings, UI labels, body copy
+      Space Mono → data, numbers, monospaced labels
+    -->
+    <link
+      href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Syne:wght@400;600;700;800&display=swap"
+      rel="stylesheet"
+    />
+
+    <!-- ── Primary Meta ─────────────────────────────────────────── -->
+    <title>Life OS — Your Personal Operating System</title>
+    <meta name="title" content="Life OS — Your Personal Operating System" />
+    <meta
+      name="description"
+      content="Manage your life across all domains with Life OS. Track habits, journal daily, manage projects, and organise your finances."
+    />
+
+    <!-- ── Open Graph ───────────────────────────────────────────── -->
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://your-domain.com/" />
+    <meta property="og:title" content="Life OS — Your Personal Operating System" />
+    <meta
+      property="og:description"
+      content="Manage your life across all domains with Life OS."
+    />
+    <meta property="og:image" content="/og-image.png" />
+
+    <!-- ── Twitter ──────────────────────────────────────────────── -->
+    <meta property="twitter:card" content="summary_large_image" />
+    <meta property="twitter:url" content="https://your-domain.com/" />
+    <meta property="twitter:title" content="Life OS" />
+    <meta property="twitter:description" content="Your Personal Operating System" />
+    <meta property="twitter:image" content="/og-image.png" />
+
+    <!-- ── Inline critical style: prevent white flash on load ───── -->
+    <style>
+      html, body { background: #0a0a0f; color: #f0f0f8; margin: 0; padding: 0; }
+    </style>
+  </head>
+
   <body>
     <div id="root"></div>
     <script type="module" src="/src/main.jsx"></script>

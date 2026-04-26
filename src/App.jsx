@@ -12,10 +12,10 @@ import Tools from "./pages/Tools";
 export default function App() {
   return (
     <BrowserRouter>
-      <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-purple-50 flex flex-col">
+      <div className="min-h-screen bg-zinc-950 flex flex-col">
         <Navbar />
 
-        <main className="flex-1 max-w-6xl w-full mx-auto px-4 sm:px-6 py-6 sm:py-8">
+        <main className="flex-1 max-w-6xl w-full mx-auto px-4 sm:px-6 py-6 sm:py-10">
           <Routes>
             <Route path="/" element={<Dashboard />} />
             <Route path="/dictionary" element={<Dictionary />} />
