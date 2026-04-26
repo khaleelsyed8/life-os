@@ -1,52 +1,52 @@
 import { useState } from "react";
 import {
-  Briefcase,
-  Plus,
-  Trash2,
-  ExternalLink,
-  PauseCircle,
-  CheckCircle,
-  PlayCircle,
-  Folder,
-  TrendingUp,
-  Clock,
-  Award,
-  Zap,
+  Briefcase, Plus, Trash2, ExternalLink,
+  PauseCircle, CheckCircle, PlayCircle,
+  Folder, TrendingUp, Clock, Award, Zap,
 } from "lucide-react";
-import Card from "../components/ui/Card";
 import useLocalStorage from "../hooks/useLocalStorage";
 
-/* ------------------ Helpers ------------------ */
-const STATUS_META = {
+/* ── Helpers ─────────────────────────────────────────────────────────── */
+const STATUS = {
   Active: {
     label: "Active",
     icon: PlayCircle,
-    color: "text-green-600",
-    bg: "bg-green-50",
-    border: "border-green-300",
-    gradient: "from-green-500 to-emerald-600",
-    badge: "bg-green-100 text-green-700",
+    color: "#34d399",
+    bg: "#34d39914",
+    border: "#34d39944",
   },
   Paused: {
     label: "Paused",
     icon: PauseCircle,
-    color: "text-yellow-700",
-    bg: "bg-yellow-50",
-    border: "border-yellow-300",
-    gradient: "from-yellow-500 to-orange-600",
-    badge: "bg-yellow-100 text-yellow-700",
+    color: "#f59e0b",
+    bg: "#f59e0b14",
+    border: "#f59e0b44",
   },
   Completed: {
     label: "Completed",
     icon: CheckCircle,
-    color: "text-indigo-600",
-    bg: "bg-indigo-50",
-    border: "border-indigo-300",
-    gradient: "from-indigo-500 to-purple-600",
-    badge: "bg-indigo-100 text-indigo-700",
+    color: "#60a5fa",
+    bg: "#60a5fa14",
+    border: "#60a5fa44",
   },
 };
 
+const SL = ({ children }) => (
+  <div className="flex items-center gap-3 mb-5">
+    <span
+      className="text-xs tracking-widest uppercase text-amber-400 font-bold"
+      style={{ fontFamily: "'Space Mono', monospace" }}
+    >
+      {children}
+    </span>
+    <div className="flex-1 h-px bg-zinc-800" />
+  </div>
+);
+
+const inputCls =
+  "w-full bg-zinc-900 border border-zinc-700 rounded-xl px-4 py-3 text-zinc-100 placeholder-zinc-600 focus:outline-none focus:border-orange-500/50 text-sm transition-colors";
+
+/* ── Component ───────────────────────────────────────────────────────── */
 export default function Projects() {
   const [projects, setProjects] = useLocalStorage("projects", []);
   const [filterStatus, setFilterStatus] = useState("All");
@@ -58,7 +58,6 @@ export default function Projects() {
 
   function addProject() {
     if (!name.trim() || !link.trim()) return;
-
     setProjects([
       {
         id: Date.now(),
@@ -70,11 +69,7 @@ export default function Projects() {
       },
       ...projects,
     ]);
-
-    setName("");
-    setLink("");
-    setStatus("Active");
-    setDescription("");
+    setName(""); setLink(""); setStatus("Active"); setDescription("");
   }
 
   function removeProject(id) {
@@ -85,306 +80,294 @@ export default function Projects() {
     setProjects(projects.map((p) => (p.id === id ? { ...p, status: newStatus } : p)));
   }
 
-  const statusCounts = {
+  const counts = {
     All: projects.length,
     Active: projects.filter((p) => p.status === "Active").length,
     Paused: projects.filter((p) => p.status === "Paused").length,
     Completed: projects.filter((p) => p.status === "Completed").length,
   };
 
-  const filteredProjects =
-    filterStatus === "All" ? projects : projects.filter((p) => p.status === filterStatus);
+  const filtered = filterStatus === "All" ? projects : projects.filter((p) => p.status === filterStatus);
+  const completionRate = projects.length > 0 ? Math.round((counts.Completed / projects.length) * 100) : 0;
 
   return (
-    <div className="space-y-8 sm:space-y-12">
-      {/* ---------- Header ---------- */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <div className="flex items-center gap-3 sm:gap-4">
-          <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-gradient-to-br from-orange-500 to-red-600 flex items-center justify-center shadow-lg">
-            <Briefcase className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
-          </div>
-          <div>
-            <h1 className="text-3xl sm:text-4xl font-bold bg-gradient-to-r from-orange-600 to-red-600 bg-clip-text text-transparent">
-              Projects
-            </h1>
-            <p className="text-sm sm:text-base text-gray-600 mt-1">Track what you're building.</p>
-          </div>
+    <div className="space-y-8" style={{ fontFamily: "'Syne', sans-serif" }}>
+
+      {/* ── Header ──────────────────────────────────────────── */}
+      <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4">
+        <div>
+          <p
+            className="text-xs tracking-widest uppercase text-orange-400 mb-1"
+            style={{ fontFamily: "'Space Mono', monospace" }}
+          >
+            Project tracker
+          </p>
+          <h1 className="text-4xl sm:text-5xl font-extrabold text-zinc-100 leading-none">
+            Projects
+          </h1>
+          <p className="text-zinc-500 text-sm mt-2">Track what you're building.</p>
         </div>
 
-        {/* Stats */}
-        <div className="flex flex-wrap gap-2 sm:gap-4">
-          <div className="text-center bg-white rounded-xl px-3 py-2 sm:px-4 sm:py-3 shadow-md border border-indigo-100">
-            <div className="text-xl sm:text-2xl font-bold text-orange-600">{projects.length}</div>
-            <div className="text-xs text-gray-600">Total</div>
-          </div>
-          <div className="text-center bg-white rounded-xl px-3 py-2 sm:px-4 sm:py-3 shadow-md border border-indigo-100">
-            <div className="text-xl sm:text-2xl font-bold text-green-600">{statusCounts.Active}</div>
-            <div className="text-xs text-gray-600">Active</div>
-          </div>
-          <div className="text-center bg-white rounded-xl px-3 py-2 sm:px-4 sm:py-3 shadow-md border border-indigo-100">
-            <div className="text-xl sm:text-2xl font-bold text-indigo-600">{statusCounts.Completed}</div>
-            <div className="text-xs text-gray-600">Done</div>
+        {/* Stat pills */}
+        <div className="flex gap-3">
+          {[
+            { label: "Total", value: counts.All, color: "#fb923c" },
+            { label: "Active", value: counts.Active, color: "#34d399" },
+            { label: "Done", value: counts.Completed, color: "#60a5fa" },
+          ].map((s) => (
+            <div
+              key={s.label}
+              className="bg-zinc-900 border border-zinc-800 rounded-xl px-4 py-3 text-center min-w-[64px]"
+            >
+              <p
+                className="text-2xl font-extrabold"
+                style={{ color: s.color, fontFamily: "'Space Mono', monospace" }}
+              >
+                {s.value}
+              </p>
+              <p className="text-zinc-500 text-xs mt-0.5">{s.label}</p>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* ── Add form ────────────────────────────────────────── */}
+      <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-5">
+        <SL>New project</SL>
+        <div className="flex flex-col gap-3">
+          <input
+            value={name} onChange={(e) => setName(e.target.value)}
+            placeholder="Project name *"
+            className={inputCls}
+          />
+          <input
+            value={link} onChange={(e) => setLink(e.target.value)}
+            placeholder="Project URL *"
+            className={inputCls}
+          />
+          <textarea
+            value={description} onChange={(e) => setDescription(e.target.value)}
+            placeholder="Description (optional)"
+            rows={3}
+            className={`${inputCls} resize-none`}
+          />
+          <div className="flex flex-col sm:flex-row gap-3">
+            <select
+              value={status} onChange={(e) => setStatus(e.target.value)}
+              className="flex-1 bg-zinc-900 border border-zinc-700 rounded-xl px-4 py-3 text-zinc-100 focus:outline-none focus:border-orange-500/50 text-sm transition-colors"
+            >
+              {Object.keys(STATUS).map((s) => (
+                <option key={s} value={s} style={{ background: "#18181b" }}>{s}</option>
+              ))}
+            </select>
+            <button
+              onClick={addProject}
+              disabled={!name || !link}
+              className="flex items-center justify-center gap-2 px-6 py-3 rounded-xl text-sm font-bold disabled:opacity-40 transition-all whitespace-nowrap"
+              style={{ background: "#fb923c", color: "#0a0a0f" }}
+            >
+              <Plus className="w-4 h-4" /> Add project
+            </button>
           </div>
         </div>
       </div>
 
-      {/* ================= ADD PROJECT ================= */}
-      <section className="space-y-4">
-        <Card className="bg-gradient-to-br from-orange-50 to-red-50 border-2 border-orange-200">
-          <div className="flex items-center gap-2 mb-4">
-            <Plus className="w-4 h-4 sm:w-5 sm:h-5 text-orange-600" />
-            <h3 className="text-base sm:text-lg font-bold text-gray-800">Add New Project</h3>
-          </div>
-
-          <div className="grid grid-cols-1 gap-3 mb-3">
-            <input
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              placeholder="Project name *"
-              className="border-2 border-orange-200 rounded-xl px-4 py-3 text-sm sm:text-base focus:border-orange-400 focus:ring-4 focus:ring-orange-100 transition-all outline-none"
-            />
-
-            <input
-              value={link}
-              onChange={(e) => setLink(e.target.value)}
-              placeholder="Project link (URL) *"
-              className="border-2 border-orange-200 rounded-xl px-4 py-3 text-sm sm:text-base focus:border-orange-400 focus:ring-4 focus:ring-orange-100 transition-all outline-none"
-            />
-          </div>
-
-          <textarea
-            value={description}
-            onChange={(e) => setDescription(e.target.value)}
-            placeholder="Project description (optional)"
-            rows="3"
-            className="w-full border-2 border-orange-200 rounded-xl px-4 py-3 text-sm sm:text-base focus:border-orange-400 focus:ring-4 focus:ring-orange-100 transition-all outline-none resize-none mb-3"
-          />
-
-          <div className="flex flex-col sm:flex-row gap-3">
-            <select
-              value={status}
-              onChange={(e) => setStatus(e.target.value)}
-              className="flex-1 border-2 border-orange-200 rounded-xl px-4 py-3 text-sm sm:text-base focus:border-orange-400 focus:ring-4 focus:ring-orange-100 transition-all outline-none bg-white"
-            >
-              {Object.keys(STATUS_META).map((s) => (
-                <option key={s}>{s}</option>
-              ))}
-            </select>
-
+      {/* ── Filter tabs ─────────────────────────────────────── */}
+      <div className="flex items-center gap-2 flex-wrap">
+        {["All", "Active", "Paused", "Completed"].map((f) => {
+          const isActive = filterStatus === f;
+          const color = f === "All" ? "#fb923c" : STATUS[f]?.color;
+          return (
             <button
-              onClick={addProject}
-              disabled={!name || !link}
-              className="bg-gradient-to-r from-orange-500 to-red-600 text-white px-6 py-3 rounded-xl hover:shadow-lg transition-all font-semibold disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 text-sm sm:text-base"
+              key={f}
+              onClick={() => setFilterStatus(f)}
+              className="px-4 py-2 rounded-xl text-xs font-bold uppercase tracking-wide transition-all"
+              style={{
+                fontFamily: "'Space Mono', monospace",
+                background: isActive ? `${color}22` : "#18181b",
+                border: `1px solid ${isActive ? `${color}66` : "#27272a"}`,
+                color: isActive ? color : "#71717a",
+              }}
             >
-              <Plus className="w-4 h-4" />
-              Add Project
+              {f} ({counts[f] ?? counts.All})
             </button>
-          </div>
-        </Card>
-      </section>
+          );
+        })}
+      </div>
 
-      {/* ================= FILTER TABS ================= */}
-      <section>
-        <div className="flex items-center gap-2 flex-wrap">
-          {["All", "Active", "Paused", "Completed"].map((filterOption) => {
-            const isActive = filterStatus === filterOption;
-            const count = statusCounts[filterOption];
-
-            return (
-              <button
-                key={filterOption}
-                onClick={() => setFilterStatus(filterOption)}
-                className={`px-3 py-2 sm:px-4 sm:py-2 rounded-xl font-semibold text-xs sm:text-sm transition-all ${
-                  isActive
-                    ? "bg-gradient-to-r from-orange-500 to-red-600 text-white shadow-lg"
-                    : "bg-white text-gray-600 hover:bg-orange-50 border border-indigo-100"
-                }`}
-              >
-                {filterOption} ({count})
-              </button>
-            );
-          })}
+      {/* ── Project grid ────────────────────────────────────── */}
+      {filtered.length === 0 ? (
+        <div className="text-center py-16 border border-dashed border-zinc-800 rounded-2xl">
+          <Briefcase className="w-10 h-10 text-zinc-700 mx-auto mb-3" />
+          <p className="text-zinc-500 text-sm">
+            {filterStatus === "All" ? "No projects yet." : `No ${filterStatus.toLowerCase()} projects.`}
+          </p>
         </div>
-      </section>
-
-      {/* ================= PROJECT LIST ================= */}
-      <section className="space-y-4">
-        {filteredProjects.length === 0 && (
-          <Card className="text-center py-12">
-            <Briefcase className="w-12 h-12 sm:w-16 sm:h-16 text-gray-300 mx-auto mb-4" />
-            <p className="text-base sm:text-lg text-gray-500">
-              {filterStatus === "All" ? "No projects yet." : `No ${filterStatus.toLowerCase()} projects.`}
-            </p>
-            <p className="text-sm text-gray-400 mt-2">
-              {filterStatus === "All"
-                ? "Add your first project to get started."
-                : `Try adding a project or changing the filter.`}
-            </p>
-          </Card>
-        )}
-
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
-          {filteredProjects.map((project) => {
-            const meta = STATUS_META[project.status];
+      ) : (
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+          {filtered.map((project) => {
+            const meta = STATUS[project.status];
             const StatusIcon = meta.icon;
 
             return (
-              <Card
+              <div
                 key={project.id}
-                hover
-                className={`group relative overflow-hidden ${meta.bg} border-2 ${meta.border}`}
+                className="group relative bg-zinc-900 rounded-2xl p-5 border transition-colors hover:border-zinc-700 overflow-hidden"
+                style={{ borderColor: "#27272a" }}
               >
-                {/* Status Ribbon */}
-                <div className="absolute top-0 right-0">
+                {/* Ambient color glow top-right */}
+                <div
+                  className="absolute top-0 right-0 w-32 h-32 rounded-full blur-3xl opacity-10 pointer-events-none"
+                  style={{ background: meta.color }}
+                />
+
+                {/* Status badge */}
+                <div
+                  className="absolute top-4 right-4 flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-bold"
+                  style={{ background: meta.bg, color: meta.color, fontFamily: "'Space Mono', monospace" }}
+                >
+                  <StatusIcon className="w-3 h-3" />
+                  {meta.label}
+                </div>
+
+                {/* Title row */}
+                <div className="flex items-start gap-3 mb-4 pr-24">
                   <div
-                    className={`${meta.badge} px-3 py-1 rounded-bl-xl flex items-center gap-1 text-xs font-bold shadow-md`}
+                    className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0"
+                    style={{ background: meta.bg, border: `1px solid ${meta.border}` }}
                   >
-                    <StatusIcon className="w-3 h-3" />
-                    {meta.label}
+                    <Folder className="w-5 h-5" style={{ color: meta.color }} />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <h3 className="font-bold text-zinc-100 text-base truncate">{project.name}</h3>
+                    {project.createdAt && (
+                      <p
+                        className="text-xs text-zinc-600 mt-0.5 flex items-center gap-1"
+                        style={{ fontFamily: "'Space Mono', monospace" }}
+                      >
+                        <Clock className="w-3 h-3" />
+                        {new Date(project.createdAt).toLocaleDateString("en-US", {
+                          month: "short", day: "numeric", year: "numeric",
+                        })}
+                      </p>
+                    )}
                   </div>
                 </div>
 
-                <div className="pt-2">
-                  {/* Project Header */}
-                  <div className="flex items-start gap-3 mb-4">
-                    <div
-                      className={`w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-gradient-to-br ${meta.gradient} flex items-center justify-center shadow-lg flex-shrink-0`}
-                    >
-                      <Folder className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <h3 className="font-bold text-lg sm:text-xl text-gray-900 truncate">{project.name}</h3>
-                      {project.createdAt && (
-                        <div className="flex items-center gap-1 text-xs text-gray-500 mt-1">
-                          <Clock className="w-3 h-3" />
-                          Created{" "}
-                          {new Date(project.createdAt).toLocaleDateString("en-US", {
-                            month: "short",
-                            day: "numeric",
-                            year: "numeric",
-                          })}
-                        </div>
-                      )}
-                    </div>
+                {/* Description */}
+                {project.description && (
+                  <p className="text-sm text-zinc-400 leading-relaxed mb-4 p-3 bg-zinc-950 rounded-xl border border-zinc-800">
+                    {project.description}
+                  </p>
+                )}
+
+                {/* Link */}
+                <a
+                  href={project.link} target="_blank" rel="noreferrer"
+                  className="inline-flex items-center gap-2 text-xs mb-5 transition-colors hover:underline truncate max-w-full"
+                  style={{ color: meta.color, fontFamily: "'Space Mono', monospace" }}
+                >
+                  <ExternalLink className="w-3.5 h-3.5 flex-shrink-0" />
+                  <span className="truncate">{project.link}</span>
+                </a>
+
+                {/* Action bar */}
+                <div
+                  className="flex items-center justify-between pt-4 border-t border-zinc-800"
+                >
+                  {/* Status switcher */}
+                  <div className="flex gap-1.5">
+                    {Object.entries(STATUS).map(([key, m]) => {
+                      const Icon = m.icon;
+                      const isCurrent = project.status === key;
+                      return (
+                        <button
+                          key={key}
+                          onClick={() => updateStatus(project.id, key)}
+                          disabled={isCurrent}
+                          title={key}
+                          className="w-8 h-8 rounded-lg flex items-center justify-center transition-all"
+                          style={{
+                            background: isCurrent ? m.bg : "transparent",
+                            border: `1px solid ${isCurrent ? m.border : "#27272a"}`,
+                            color: isCurrent ? m.color : "#52525b",
+                            cursor: isCurrent ? "default" : "pointer",
+                          }}
+                        >
+                          <Icon className="w-3.5 h-3.5" />
+                        </button>
+                      );
+                    })}
                   </div>
 
-                  {/* Description */}
-                  {project.description && (
-                    <div className="mb-4 p-3 bg-white/50 rounded-lg border border-white">
-                      <p className="text-sm text-gray-700 leading-relaxed">{project.description}</p>
-                    </div>
-                  )}
-
-                  {/* Project Link */}
-                  <a
-                    href={project.link}
-                    target="_blank"
-                    rel="noreferrer"
-                    className={`inline-flex items-center gap-2 text-xs sm:text-sm font-semibold ${meta.color} hover:underline mb-4 break-all`}
+                  {/* Delete */}
+                  <button
+                    onClick={() => removeProject(project.id)}
+                    className="p-2 text-zinc-700 hover:text-red-400 opacity-0 group-hover:opacity-100 transition-all rounded-lg hover:bg-red-500/10"
                   >
-                    <ExternalLink className="w-3 h-3 sm:w-4 sm:h-4 flex-shrink-0" />
-                    <span className="truncate">{project.link}</span>
-                  </a>
-
-                  {/* Action Bar */}
-                  <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between pt-4 border-t border-white gap-3">
-                    {/* Status Changer */}
-                    <div className="flex gap-1">
-                      {Object.keys(STATUS_META).map((statusOption) => {
-                        const isCurrentStatus = project.status === statusOption;
-                        const statusMeta = STATUS_META[statusOption];
-                        const StatusOptionIcon = statusMeta.icon;
-
-                        return (
-                          <button
-                            key={statusOption}
-                            onClick={() => updateStatus(project.id, statusOption)}
-                            disabled={isCurrentStatus}
-                            className={`p-2 rounded-lg transition-all ${
-                              isCurrentStatus
-                                ? `${statusMeta.bg} ${statusMeta.color} cursor-default`
-                                : "bg-white/50 text-gray-400 hover:bg-white hover:text-gray-700"
-                            }`}
-                            title={`Set to ${statusOption}`}
-                          >
-                            <StatusOptionIcon className="w-4 h-4" />
-                          </button>
-                        );
-                      })}
-                    </div>
-
-                    {/* Delete Button */}
-                    <button
-                      onClick={() => removeProject(project.id)}
-                      className="p-2 text-gray-400 sm:opacity-0 group-hover:opacity-100 hover:text-red-600 hover:bg-red-50 rounded-lg transition-all"
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </button>
-                  </div>
+                    <Trash2 className="w-4 h-4" />
+                  </button>
                 </div>
 
-                {/* Completion Badge */}
+                {/* Completed watermark */}
                 {project.status === "Completed" && (
-                  <div className="absolute bottom-4 right-4 opacity-10">
-                    <Award className="w-12 h-12 sm:w-16 sm:h-16 text-indigo-600" />
+                  <div className="absolute bottom-4 right-14 opacity-5 pointer-events-none">
+                    <Award className="w-16 h-16 text-blue-400" />
                   </div>
                 )}
-              </Card>
+              </div>
             );
           })}
         </div>
-      </section>
+      )}
 
-      {/* ================= MOTIVATIONAL STATS ================= */}
+      {/* ── Bottom stats ────────────────────────────────────── */}
       {projects.length > 0 && (
-        <section>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
-            {/* Active Velocity */}
-            {statusCounts.Active > 0 && (
-              <Card className="bg-gradient-to-br from-green-50 to-emerald-50 border-2 border-green-200">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-gradient-to-br from-green-500 to-emerald-600 flex items-center justify-center">
-                    <Zap className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
-                  </div>
-                  <div>
-                    <div className="text-xl sm:text-2xl font-bold text-green-600">{statusCounts.Active}</div>
-                    <div className="text-xs sm:text-sm text-gray-600">In Progress</div>
-                  </div>
-                </div>
-              </Card>
-            )}
-
-            {/* Completion Rate */}
-            {statusCounts.Completed > 0 && (
-              <Card className="bg-gradient-to-br from-indigo-50 to-purple-50 border-2 border-indigo-200">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center">
-                    <Award className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
-                  </div>
-                  <div>
-                    <div className="text-xl sm:text-2xl font-bold text-indigo-600">
-                      {Math.round((statusCounts.Completed / projects.length) * 100)}%
-                    </div>
-                    <div className="text-xs sm:text-sm text-gray-600">Completed</div>
-                  </div>
-                </div>
-              </Card>
-            )}
-
-            {/* Total Progress */}
-            <Card className="bg-gradient-to-br from-orange-50 to-red-50 border-2 border-orange-200">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-gradient-to-br from-orange-500 to-red-600 flex items-center justify-center">
-                  <TrendingUp className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
+        <div>
+          <SL>Overview</SL>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            {counts.Active > 0 && (
+              <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-5 flex items-center gap-4">
+                <div className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0"
+                  style={{ background: "#34d39914", border: "1px solid #34d39944" }}>
+                  <Zap className="w-5 h-5 text-emerald-400" />
                 </div>
                 <div>
-                  <div className="text-xl sm:text-2xl font-bold text-orange-600">{projects.length}</div>
-                  <div className="text-xs sm:text-sm text-gray-600">Total Projects</div>
+                  <p className="text-2xl font-extrabold text-emerald-400" style={{ fontFamily: "'Space Mono', monospace" }}>
+                    {counts.Active}
+                  </p>
+                  <p className="text-xs text-zinc-500">In progress</p>
                 </div>
               </div>
-            </Card>
+            )}
+            {counts.Completed > 0 && (
+              <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-5 flex items-center gap-4">
+                <div className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0"
+                  style={{ background: "#60a5fa14", border: "1px solid #60a5fa44" }}>
+                  <Award className="w-5 h-5 text-blue-400" />
+                </div>
+                <div>
+                  <p className="text-2xl font-extrabold text-blue-400" style={{ fontFamily: "'Space Mono', monospace" }}>
+                    {completionRate}%
+                  </p>
+                  <p className="text-xs text-zinc-500">Completion rate</p>
+                </div>
+              </div>
+            )}
+            <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-5 flex items-center gap-4">
+              <div className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0"
+                style={{ background: "#fb923c14", border: "1px solid #fb923c44" }}>
+                <TrendingUp className="w-5 h-5 text-orange-400" />
+              </div>
+              <div>
+                <p className="text-2xl font-extrabold text-orange-400" style={{ fontFamily: "'Space Mono', monospace" }}>
+                  {counts.All}
+                </p>
+                <p className="text-xs text-zinc-500">Total projects</p>
+              </div>
+            </div>
           </div>
-        </section>
+        </div>
       )}
     </div>
   );

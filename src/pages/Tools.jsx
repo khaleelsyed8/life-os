@@ -1,72 +1,44 @@
 import { useState } from "react";
 import {
-  Wallet,
-  Plus,
-  Trash2,
-  ArrowDownCircle,
-  ArrowUpCircle,
-  Calendar,
-  TrendingUp,
-  TrendingDown,
-  Home,
-  Heart,
-  Target,
-  Calculator,
-  Zap,
-  CreditCard,
-  Landmark,
+  Wallet, Plus, Trash2, ArrowDownCircle, ArrowUpCircle,
+  Calendar, TrendingUp, TrendingDown, Home, Heart, Target,
+  Calculator, Zap, CreditCard, Landmark,
 } from "lucide-react";
-import Card from "../components/ui/Card";
 import useLocalStorage from "../hooks/useLocalStorage";
 
-/* ------------------ Helpers ------------------ */
+/* ── Helpers ─────────────────────────────────────────────────────────── */
 function currentMonthKey() {
   const d = new Date();
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
 }
 
-const CATEGORY_META = {
-  Need: {
-    label: "Need",
-    color: "text-blue-600",
-    bg: "bg-blue-50",
-    border: "border-blue-200",
-    gradient: "from-blue-500 to-cyan-600",
-    icon: Home,
-  },
-  Want: {
-    label: "Want",
-    color: "text-pink-600",
-    bg: "bg-pink-50",
-    border: "border-pink-200",
-    gradient: "from-pink-500 to-rose-600",
-    icon: Heart,
-  },
-  Investment: {
-    label: "Investment",
-    color: "text-green-600",
-    bg: "bg-green-50",
-    border: "border-green-200",
-    gradient: "from-green-500 to-emerald-600",
-    icon: TrendingUp,
-  },
+const CATEGORY = {
+  Need:       { label: "Need",       color: "#60a5fa", icon: Home,      bg: "#60a5fa14", border: "#60a5fa33" },
+  Want:       { label: "Want",       color: "#f472b6", icon: Heart,     bg: "#f472b614", border: "#f472b633" },
+  Investment: { label: "Investment", color: "#34d399", icon: TrendingUp, bg: "#34d39914", border: "#34d39933" },
 };
 
-const PAYMENT_META = {
-  Cash: {
-    label: "Cash/Bank",
-    icon: Landmark,
-    color: "text-teal-700",
-    badge: "bg-teal-100 text-teal-700"
-  },
-  Credit: {
-    label: "Credit Card",
-    icon: CreditCard,
-    color: "text-purple-700",
-    badge: "bg-purple-100 text-purple-700"
-  }
+const PAYMENT = {
+  Cash:   { label: "Cash/Bank",    icon: Landmark,   color: "#2dd4bf", bg: "#2dd4bf14", border: "#2dd4bf33" },
+  Credit: { label: "Credit Card",  icon: CreditCard, color: "#c084fc", bg: "#c084fc14", border: "#c084fc33" },
 };
 
+const SL = ({ children }) => (
+  <div className="flex items-center gap-3 mb-5">
+    <span
+      className="text-xs tracking-widest uppercase text-amber-400 font-bold"
+      style={{ fontFamily: "'Space Mono', monospace" }}
+    >
+      {children}
+    </span>
+    <div className="flex-1 h-px bg-zinc-800" />
+  </div>
+);
+
+const inputCls =
+  "w-full bg-zinc-900 border border-zinc-700 rounded-xl px-4 py-3 text-zinc-100 placeholder-zinc-600 focus:outline-none focus:border-teal-500/50 text-sm transition-colors";
+
+/* ── Component ───────────────────────────────────────────────────────── */
 export default function Tools() {
   const [items, setItems] = useLocalStorage("budget-items", []);
   const [month, setMonth] = useState(currentMonthKey());
@@ -81,447 +53,357 @@ export default function Tools() {
 
   function addItem() {
     if (!label.trim() || !amount) return;
-
     setItems([
       {
-        id: Date.now(),
-        month,
-        label,
-        amount: Number(amount),
-        type,
-        category,
+        id: Date.now(), month, label,
+        amount: Number(amount), type, category,
         paymentMode: type === "Expense" ? paymentMode : "Cash",
         createdAt: new Date().toISOString(),
       },
       ...items,
     ]);
-
-    setLabel("");
-    setAmount("");
-    setType("Expense");
-    setCategory("Need");
-    setPaymentMode("Cash");
+    setLabel(""); setAmount(""); setType("Expense"); setCategory("Need"); setPaymentMode("Cash");
   }
 
-  function deleteItem(id) {
-    setItems(items.filter((i) => i.id !== id));
-  }
+  function deleteItem(id) { setItems(items.filter((i) => i.id !== id)); }
 
-  const income = monthItems.filter((i) => i.type === "Income").reduce((s, i) => s + i.amount, 0);
+  const income        = monthItems.filter((i) => i.type === "Income").reduce((s, i) => s + i.amount, 0);
+  const cashExp       = monthItems.filter((i) => i.type === "Expense" && i.paymentMode === "Cash").reduce((s, i) => s + i.amount, 0);
+  const creditExp     = monthItems.filter((i) => i.type === "Expense" && i.paymentMode === "Credit").reduce((s, i) => s + i.amount, 0);
+  const totalExp      = cashExp + creditExp;
+  const cashBalance   = income - cashExp;
+  const totalBalance  = income - totalExp;
+  const savingsRate   = income > 0 ? Math.round((totalBalance / income) * 100) : 0;
 
-  const cashExpenses = monthItems
-    .filter((i) => i.type === "Expense" && i.paymentMode === "Cash")
-    .reduce((s, i) => s + i.amount, 0);
-
-  const creditExpenses = monthItems
-    .filter((i) => i.type === "Expense" && i.paymentMode === "Credit")
-    .reduce((s, i) => s + i.amount, 0);
-
-  const totalExpenses = cashExpenses + creditExpenses;
-  
-  const cashBalance = income - cashExpenses; // Actual money you have now
-  const totalBalance = income - totalExpenses; // What you'll have after paying credit card
-
-  // Category breakdown
-  const categoryBreakdown = {
-    Need: monthItems
-      .filter((i) => i.type === "Expense" && i.category === "Need")
-      .reduce((s, i) => s + i.amount, 0),
-    Want: monthItems
-      .filter((i) => i.type === "Expense" && i.category === "Want")
-      .reduce((s, i) => s + i.amount, 0),
-    Investment: monthItems
-      .filter((i) => i.type === "Expense" && i.category === "Investment")
-      .reduce((s, i) => s + i.amount, 0),
+  const catBreakdown = {
+    Need:       monthItems.filter((i) => i.type === "Expense" && i.category === "Need").reduce((s, i) => s + i.amount, 0),
+    Want:       monthItems.filter((i) => i.type === "Expense" && i.category === "Want").reduce((s, i) => s + i.amount, 0),
+    Investment: monthItems.filter((i) => i.type === "Expense" && i.category === "Investment").reduce((s, i) => s + i.amount, 0),
   };
 
-  const savingsRate = income > 0 ? Math.round((totalBalance / income) * 100) : 0;
+  const fmt = (n) => `₹${n.toLocaleString()}`;
 
   return (
-    <div className="space-y-8 sm:space-y-12">
-      {/* ---------- Header ---------- */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <div className="flex items-center gap-3 sm:gap-4">
-          <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-gradient-to-br from-teal-500 to-emerald-600 flex items-center justify-center shadow-lg">
-            <Calculator className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
-          </div>
-          <div>
-            <h1 className="text-3xl sm:text-4xl font-bold bg-gradient-to-r from-teal-600 to-emerald-600 bg-clip-text text-transparent">
-              Budget Tools
-            </h1>
-            <p className="text-sm sm:text-base text-gray-600 mt-1">Understand where your money goes.</p>
-          </div>
+    <div className="space-y-8" style={{ fontFamily: "'Syne', sans-serif" }}>
+
+      {/* ── Header ──────────────────────────────────────────── */}
+      <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4">
+        <div>
+          <p
+            className="text-xs tracking-widest uppercase text-teal-400 mb-1"
+            style={{ fontFamily: "'Space Mono', monospace" }}
+          >
+            Financial tracker
+          </p>
+          <h1 className="text-4xl sm:text-5xl font-extrabold text-zinc-100 leading-none">
+            Budget
+          </h1>
+          <p className="text-zinc-500 text-sm mt-2">Understand where your money goes.</p>
         </div>
 
-        {/* Month Picker */}
-        <div className="flex items-center gap-2 bg-white px-4 py-3 rounded-xl border-2 border-teal-200 shadow-md hover:shadow-lg transition-all">
-          <Calendar className="w-4 h-4 sm:w-5 sm:h-5 text-teal-600" />
+        {/* Month picker */}
+        <div
+          className="flex items-center gap-2 px-4 py-3 rounded-xl border transition-colors"
+          style={{ background: "#18181b", borderColor: "#27272a" }}
+        >
+          <Calendar className="w-4 h-4 text-teal-400 flex-shrink-0" />
           <input
-            type="month"
-            value={month}
-            onChange={(e) => setMonth(e.target.value)}
-            className="outline-none text-xs sm:text-sm font-semibold text-gray-700"
+            type="month" value={month} onChange={(e) => setMonth(e.target.value)}
+            className="bg-transparent outline-none text-sm text-zinc-300"
+            style={{ fontFamily: "'Space Mono', monospace" }}
           />
         </div>
       </div>
 
-      {/* ---------- Stats ---------- */}
-      <div className="grid grid-cols-2 lg:grid-cols-5 gap-3 sm:gap-4">
-        <Card className="bg-gradient-to-br from-green-50 to-emerald-50 border-2 border-green-300">
-          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 sm:gap-3">
-            <div className="flex-1">
-              <p className="text-xs text-gray-600 font-medium mb-1">Income</p>
-              <p className="text-lg sm:text-2xl font-bold text-green-600">₹{income.toLocaleString()}</p>
-            </div>
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-green-500 to-emerald-600 flex items-center justify-center shadow-lg">
-              <ArrowDownCircle className="w-5 h-5 text-white" />
-            </div>
-          </div>
-        </Card>
-
-        <Card className="bg-gradient-to-br from-teal-50 to-cyan-50 border-2 border-teal-300">
-          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 sm:gap-3">
-            <div className="flex-1">
-              <p className="text-xs text-gray-600 font-medium mb-1">Cash Spent</p>
-              <p className="text-lg sm:text-2xl font-bold text-teal-600">₹{cashExpenses.toLocaleString()}</p>
-            </div>
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-teal-500 to-cyan-600 flex items-center justify-center shadow-lg">
-              <Landmark className="w-5 h-5 text-white" />
-            </div>
-          </div>
-        </Card>
-
-        <Card className="bg-gradient-to-br from-purple-50 to-violet-50 border-2 border-purple-300">
-          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 sm:gap-3">
-            <div className="flex-1">
-              <p className="text-xs text-gray-600 font-medium mb-1">Credit Card</p>
-              <p className="text-lg sm:text-2xl font-bold text-purple-600">₹{creditExpenses.toLocaleString()}</p>
-            </div>
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-purple-500 to-violet-600 flex items-center justify-center shadow-lg">
-              <CreditCard className="w-5 h-5 text-white" />
-            </div>
-          </div>
-        </Card>
-
-        <Card
-          className={`bg-gradient-to-br ${
-            cashBalance >= 0
-              ? "from-blue-50 to-cyan-50 border-2 border-blue-300"
-              : "from-orange-50 to-red-50 border-2 border-orange-300"
-          }`}
-        >
-          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 sm:gap-3">
-            <div className="flex-1">
-              <p className="text-xs text-gray-600 font-medium mb-1">Cash Balance</p>
-              <p className={`text-lg sm:text-2xl font-bold ${cashBalance >= 0 ? "text-blue-600" : "text-orange-600"}`}>
-                ₹{cashBalance.toLocaleString()}
+      {/* ── Key metrics ─────────────────────────────────────── */}
+      <div className="grid grid-cols-2 lg:grid-cols-5 gap-3">
+        {[
+          { label: "Income",       value: fmt(income),      color: "#34d399", icon: ArrowDownCircle },
+          { label: "Cash spent",   value: fmt(cashExp),     color: "#2dd4bf", icon: Landmark       },
+          { label: "Credit card",  value: fmt(creditExp),   color: "#c084fc", icon: CreditCard     },
+          { label: "Cash balance", value: fmt(cashBalance),
+            color: cashBalance >= 0 ? "#60a5fa" : "#fb923c",
+            icon: Wallet },
+          { label: "Savings rate", value: `${savingsRate}%`, color: "#f59e0b", icon: Target        },
+        ].map((s) => {
+          const Icon = s.icon;
+          return (
+            <div
+              key={s.label}
+              className="bg-zinc-900 border border-zinc-800 rounded-xl px-4 py-4"
+            >
+              <div className="flex items-center justify-between mb-2">
+                <p className="text-xs text-zinc-500 uppercase tracking-wider leading-tight">{s.label}</p>
+                <Icon className="w-3.5 h-3.5 flex-shrink-0" style={{ color: s.color, opacity: 0.6 }} />
+              </div>
+              <p
+                className="text-lg sm:text-xl font-extrabold truncate"
+                style={{ color: s.color, fontFamily: "'Space Mono', monospace" }}
+              >
+                {s.value}
               </p>
             </div>
-            <div
-              className={`w-10 h-10 rounded-xl bg-gradient-to-br ${
-                cashBalance >= 0 ? "from-blue-500 to-cyan-600" : "from-orange-500 to-red-600"
-              } flex items-center justify-center shadow-lg`}
-            >
-              <Wallet className="w-5 h-5 text-white" />
-            </div>
-          </div>
-        </Card>
-
-        <Card className="bg-gradient-to-br from-indigo-50 to-purple-50 border-2 border-indigo-300">
-          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 sm:gap-3">
-            <div className="flex-1">
-              <p className="text-xs text-gray-600 font-medium mb-1">Savings Rate</p>
-              <p className="text-lg sm:text-2xl font-bold text-indigo-600">{savingsRate}%</p>
-            </div>
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center shadow-lg">
-              <Target className="w-5 h-5 text-white" />
-            </div>
-          </div>
-        </Card>
+          );
+        })}
       </div>
 
-      {/* Payment Mode Breakdown */}
-      {totalExpenses > 0 && (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
-          <Card className="bg-gradient-to-br from-teal-50 to-cyan-50 border-2 border-teal-300">
-            <div className="flex items-center gap-3 mb-3">
-              <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-teal-500 to-cyan-600 flex items-center justify-center shadow-lg">
-                <Landmark className="w-6 h-6 text-white" />
-              </div>
-              <div>
-                <p className="text-sm text-gray-600 font-medium">Cash/Bank Payment</p>
-                <p className="text-2xl font-bold text-teal-600">₹{cashExpenses.toLocaleString()}</p>
-              </div>
-            </div>
-            <div className="text-xs text-gray-600">
-              {Math.round((cashExpenses / totalExpenses) * 100)}% of total expenses • Deducted from balance
-            </div>
-          </Card>
-
-          <Card className="bg-gradient-to-br from-purple-50 to-violet-50 border-2 border-purple-300">
-            <div className="flex items-center gap-3 mb-3">
-              <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-purple-500 to-violet-600 flex items-center justify-center shadow-lg">
-                <CreditCard className="w-6 h-6 text-white" />
-              </div>
-              <div>
-                <p className="text-sm text-gray-600 font-medium">Credit Card</p>
-                <p className="text-2xl font-bold text-purple-600">₹{creditExpenses.toLocaleString()}</p>
-              </div>
-            </div>
-            <div className="text-xs text-gray-600">
-              {Math.round((creditExpenses / totalExpenses) * 100)}% of total expenses • Due next month
-            </div>
-          </Card>
-        </div>
-      )}
-
-      {/* ---------- Category Breakdown ---------- */}
-      {totalExpenses > 0 && (
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6">
-          {Object.entries(categoryBreakdown).map(([cat, amount]) => {
-            const meta = CATEGORY_META[cat];
-            const percentage = totalExpenses > 0 ? Math.round((amount / totalExpenses) * 100) : 0;
-            const Icon = meta.icon;
-
+      {/* ── Payment breakdown ───────────────────────────────── */}
+      {totalExp > 0 && (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {[
+            { key: "Cash",   amount: cashExp,   pct: totalExp > 0 ? Math.round((cashExp / totalExp) * 100) : 0,   note: "Deducted from balance now" },
+            { key: "Credit", amount: creditExp, pct: totalExp > 0 ? Math.round((creditExp / totalExp) * 100) : 0, note: "Due next month" },
+          ].map(({ key, amount: a, pct, note }) => {
+            const m = PAYMENT[key];
+            const Icon = m.icon;
             return (
-              <Card key={cat} className={`${meta.bg} border-2 ${meta.border}`}>
+              <div
+                key={key}
+                className="bg-zinc-900 rounded-2xl p-5 border"
+                style={{ borderColor: m.border }}
+              >
                 <div className="flex items-center gap-3 mb-3">
-                  <div
-                    className={`w-10 h-10 rounded-lg bg-gradient-to-br ${meta.gradient} flex items-center justify-center shadow-md`}
-                  >
-                    <Icon className="w-5 h-5 text-white" />
+                  <div className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0"
+                    style={{ background: m.bg }}>
+                    <Icon className="w-5 h-5" style={{ color: m.color }} />
                   </div>
-                  <div className="flex-1">
-                    <p className="text-xs sm:text-sm text-gray-600 font-medium">{meta.label}</p>
-                    <p className={`text-xl sm:text-2xl font-bold ${meta.color}`}>₹{amount.toLocaleString()}</p>
-                  </div>
-                </div>
-
-                <div className="space-y-1">
-                  <div className="flex justify-between text-xs text-gray-600">
-                    <span>{percentage}% of expenses</span>
-                    <span className="font-semibold">
-                      {monthItems.filter((i) => i.category === cat && i.type === "Expense").length} items
-                    </span>
-                  </div>
-                  <div className="w-full bg-white rounded-full h-2 overflow-hidden">
-                    <div
-                      className={`bg-gradient-to-r ${meta.gradient} h-full transition-all duration-500`}
-                      style={{ width: `${percentage}%` }}
-                    />
+                  <div>
+                    <p className="text-xs text-zinc-500">{m.label}</p>
+                    <p className="text-xl font-extrabold" style={{ color: m.color, fontFamily: "'Space Mono', monospace" }}>
+                      {fmt(a)}
+                    </p>
                   </div>
                 </div>
-              </Card>
+                <div className="h-1.5 bg-zinc-800 rounded-full overflow-hidden mb-1.5">
+                  <div className="h-full rounded-full transition-all duration-700"
+                    style={{ width: `${pct}%`, background: m.color }} />
+                </div>
+                <p className="text-xs text-zinc-600">{pct}% of total expenses · {note}</p>
+              </div>
             );
           })}
         </div>
       )}
 
-      {/* ---------- Add Entry ---------- */}
-      <Card className="bg-gradient-to-br from-teal-50 to-emerald-50 border-2 border-teal-200">
-        <div className="flex items-center gap-2 mb-4">
-          <Plus className="w-4 h-4 sm:w-5 sm:h-5 text-teal-600" />
-          <h3 className="text-base sm:text-lg font-bold text-gray-800">Add Budget Entry</h3>
+      {/* ── Category breakdown ──────────────────────────────── */}
+      {totalExp > 0 && (
+        <div>
+          <SL>Spending by category</SL>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            {Object.entries(catBreakdown).map(([cat, amt]) => {
+              const m = CATEGORY[cat];
+              const Icon = m.icon;
+              const pct = totalExp > 0 ? Math.round((amt / totalExp) * 100) : 0;
+              const count = monthItems.filter((i) => i.type === "Expense" && i.category === cat).length;
+              return (
+                <div
+                  key={cat}
+                  className="bg-zinc-900 rounded-2xl p-5 border"
+                  style={{ borderColor: m.border }}
+                >
+                  <div className="flex items-center gap-3 mb-4">
+                    <div className="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0"
+                      style={{ background: m.bg }}>
+                      <Icon className="w-4 h-4" style={{ color: m.color }} />
+                    </div>
+                    <div>
+                      <p className="text-xs text-zinc-500">{m.label}</p>
+                      <p className="text-xl font-extrabold" style={{ color: m.color, fontFamily: "'Space Mono', monospace" }}>
+                        {fmt(amt)}
+                      </p>
+                    </div>
+                  </div>
+                  <div className="h-1.5 bg-zinc-800 rounded-full overflow-hidden mb-2">
+                    <div className="h-full rounded-full transition-all duration-700"
+                      style={{ width: `${pct}%`, background: m.color }} />
+                  </div>
+                  <div className="flex items-center justify-between text-xs text-zinc-600">
+                    <span>{pct}% of expenses</span>
+                    <span style={{ fontFamily: "'Space Mono', monospace" }}>{count} items</span>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
         </div>
+      )}
 
-        <div className="grid grid-cols-1 gap-3 mb-3">
-          <input
-            value={label}
-            onChange={(e) => setLabel(e.target.value)}
-            placeholder="Description (e.g., Groceries, Salary...)"
-            className="border-2 border-teal-200 rounded-xl px-4 py-3 text-sm sm:text-base focus:border-teal-400 focus:ring-4 focus:ring-teal-100 transition-all outline-none"
-          />
-
-          <input
-            type="number"
-            value={amount}
-            onChange={(e) => setAmount(e.target.value)}
-            placeholder="Amount (₹)"
-            className="border-2 border-teal-200 rounded-xl px-4 py-3 text-sm sm:text-base focus:border-teal-400 focus:ring-4 focus:ring-teal-100 transition-all outline-none"
-          />
+      {/* ── Add entry ───────────────────────────────────────── */}
+      <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-5">
+        <SL>Add entry</SL>
+        <div className="flex flex-col gap-3">
+          <input value={label} onChange={(e) => setLabel(e.target.value)}
+            placeholder="Description (e.g., Groceries, Salary…)" className={inputCls} />
+          <input type="number" value={amount} onChange={(e) => setAmount(e.target.value)}
+            placeholder="Amount (₹)" className={inputCls} />
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+            {/* Type */}
+            <select value={type} onChange={(e) => setType(e.target.value)}
+              className="bg-zinc-900 border border-zinc-700 rounded-xl px-3 py-3 text-zinc-100 focus:outline-none focus:border-teal-500/50 text-sm">
+              <option value="Expense" style={{ background: "#18181b" }}>💸 Expense</option>
+              <option value="Income"  style={{ background: "#18181b" }}>💰 Income</option>
+            </select>
+            {/* Category */}
+            <select value={category} onChange={(e) => setCategory(e.target.value)}
+              disabled={type === "Income"}
+              className="bg-zinc-900 border border-zinc-700 rounded-xl px-3 py-3 text-zinc-100 focus:outline-none focus:border-teal-500/50 text-sm disabled:opacity-40">
+              <option value="Need"       style={{ background: "#18181b" }}>🏠 Need</option>
+              <option value="Want"       style={{ background: "#18181b" }}>❤️ Want</option>
+              <option value="Investment" style={{ background: "#18181b" }}>📈 Investment</option>
+            </select>
+            {/* Payment mode */}
+            <select value={paymentMode} onChange={(e) => setPaymentMode(e.target.value)}
+              disabled={type === "Income"}
+              className="bg-zinc-900 border border-zinc-700 rounded-xl px-3 py-3 text-zinc-100 focus:outline-none focus:border-teal-500/50 text-sm disabled:opacity-40">
+              <option value="Cash"   style={{ background: "#18181b" }}>🏦 Cash/Bank</option>
+              <option value="Credit" style={{ background: "#18181b" }}>💳 Credit Card</option>
+            </select>
+            {/* Submit */}
+            <button onClick={addItem} disabled={!label || !amount}
+              className="flex items-center justify-center gap-2 px-4 py-3 rounded-xl text-sm font-bold disabled:opacity-40 transition-all"
+              style={{ background: "#2dd4bf", color: "#0a0a0f" }}>
+              <Plus className="w-4 h-4" /> Add
+            </button>
+          </div>
         </div>
+      </div>
 
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-          <select
-            value={type}
-            onChange={(e) => setType(e.target.value)}
-            className="border-2 border-teal-200 rounded-xl px-4 py-3 text-sm sm:text-base focus:border-teal-400 focus:ring-4 focus:ring-teal-100 transition-all outline-none bg-white font-medium"
-          >
-            <option value="Expense">💸 Expense</option>
-            <option value="Income">💰 Income</option>
-          </select>
-
-          <select
-            value={category}
-            onChange={(e) => setCategory(e.target.value)}
-            disabled={type === "Income"}
-            className="border-2 border-teal-200 rounded-xl px-4 py-3 text-sm sm:text-base focus:border-teal-400 focus:ring-4 focus:ring-teal-100 transition-all outline-none bg-white font-medium disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            <option value="Need">🏠 Need</option>
-            <option value="Want">❤️ Want</option>
-            <option value="Investment">📈 Investment</option>
-          </select>
-
-          <select
-            value={paymentMode}
-            onChange={(e) => setPaymentMode(e.target.value)}
-            disabled={type === "Income"}
-            className="border-2 border-teal-200 rounded-xl px-4 py-3 text-sm sm:text-base focus:border-teal-400 focus:ring-4 focus:ring-teal-100 transition-all outline-none bg-white font-medium disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            <option value="Cash">🏦 Cash/Bank</option>
-            <option value="Credit">💳 Credit Card</option>
-          </select>
-
-          <button
-            onClick={addItem}
-            disabled={!label || !amount}
-            className="col-span-2 sm:col-span-1 bg-gradient-to-r from-teal-500 to-emerald-600 text-white rounded-xl hover:shadow-lg transition-all font-semibold disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 py-3 text-sm sm:text-base"
-          >
-            <Plus className="w-4 h-4" />
-            Add
-          </button>
-        </div>
-      </Card>
-
-      {/* ---------- Entries ---------- */}
-      <section className="space-y-4">
-        <div className="flex items-center justify-between">
-          <h2 className="text-xl sm:text-2xl font-bold text-gray-800">Transactions</h2>
+      {/* ── Transactions ────────────────────────────────────── */}
+      <div>
+        <div className="flex items-center justify-between mb-5">
+          <SL>Transactions</SL>
           {monthItems.length > 0 && (
-            <span className="text-xs sm:text-sm text-gray-600 bg-white px-3 py-1 rounded-full border border-gray-200">
+            <span
+              className="text-xs text-zinc-500 ml-4 mb-5"
+              style={{ fontFamily: "'Space Mono', monospace" }}
+            >
               {monthItems.length} entries
             </span>
           )}
         </div>
 
-        {monthItems.length === 0 && (
-          <Card className="text-center py-16">
-            <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-gradient-to-br from-teal-100 to-emerald-100 flex items-center justify-center mx-auto mb-4">
-              <Wallet className="w-8 h-8 sm:w-10 sm:h-10 text-teal-600" />
-            </div>
-            <p className="text-base sm:text-lg text-gray-500 font-semibold">No entries for this month</p>
-            <p className="text-sm text-gray-400 mt-2">Start tracking to see insights and manage your budget effectively.</p>
-          </Card>
-        )}
+        {monthItems.length === 0 ? (
+          <div className="text-center py-16 border border-dashed border-zinc-800 rounded-2xl">
+            <Wallet className="w-10 h-10 text-zinc-700 mx-auto mb-3" />
+            <p className="text-zinc-500 text-sm">No entries yet for this month.</p>
+          </div>
+        ) : (
+          <div className="space-y-2">
+            {monthItems.map((item) => {
+              const cat = CATEGORY[item.category];
+              const pay = PAYMENT[item.paymentMode || "Cash"];
+              const CatIcon = cat?.icon || Wallet;
+              const isIncome = item.type === "Income";
 
-        <div className="space-y-3">
-          {monthItems.map((item) => {
-            const meta = CATEGORY_META[item.category];
-            const paymentMeta = PAYMENT_META[item.paymentMode || 'Cash'];
-            const Icon = meta?.icon || Wallet;
-            const PaymentIcon = paymentMeta.icon;
-
-            return (
-              <Card
-                key={item.id}
-                hover
-                className={`group transition-all duration-300 ${
-                  item.type === "Income"
-                    ? "bg-green-50 border-2 border-green-200"
-                    : `${meta.bg} border-2 ${meta.border}`
-                }`}
-              >
-                <div className="flex items-start gap-3 sm:gap-4">
+              return (
+                <div
+                  key={item.id}
+                  className="group flex items-center gap-3 sm:gap-4 bg-zinc-900 border border-zinc-800 rounded-2xl px-4 py-3.5 hover:border-zinc-700 transition-colors"
+                >
+                  {/* Icon */}
                   <div
-                    className={`w-10 h-10 sm:w-12 sm:h-12 rounded-xl flex items-center justify-center shadow-md flex-shrink-0 ${
-                      item.type === "Income"
-                        ? "bg-gradient-to-br from-green-500 to-emerald-600"
-                        : `bg-gradient-to-br ${meta.gradient}`
-                    }`}
+                    className="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0"
+                    style={{ background: isIncome ? "#34d39914" : cat?.bg }}
                   >
-                    {item.type === "Income" ? (
-                      <ArrowDownCircle className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
-                    ) : (
-                      <Icon className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
-                    )}
+                    {isIncome
+                      ? <ArrowDownCircle className="w-4 h-4 text-emerald-400" />
+                      : <CatIcon className="w-4 h-4" style={{ color: cat?.color }} />
+                    }
                   </div>
 
+                  {/* Label + meta */}
                   <div className="flex-1 min-w-0">
-                    <p className="font-bold text-gray-900 text-base sm:text-lg truncate">{item.label}</p>
-                    <div className="flex flex-wrap items-center gap-2 mt-1">
+                    <p className="font-semibold text-zinc-200 text-sm truncate">{item.label}</p>
+                    <div className="flex flex-wrap items-center gap-1.5 mt-0.5">
                       <span
-                        className={`text-xs font-bold px-2 py-1 rounded-full ${
-                          item.type === "Income" ? "bg-green-200 text-green-800" : `${meta.bg} ${meta.color}`
-                        }`}
+                        className="text-xs px-1.5 py-0.5 rounded font-bold"
+                        style={{
+                          background: isIncome ? "#34d39914" : cat?.bg,
+                          color: isIncome ? "#34d399" : cat?.color,
+                          fontFamily: "'Space Mono', monospace",
+                        }}
                       >
-                        {item.type}
+                        {isIncome ? "Income" : item.category}
                       </span>
-                      {item.type === "Expense" && (
-                        <>
-                          <span className="text-xs text-gray-500">• {item.category}</span>
-                          <span className={`text-xs font-bold px-2 py-1 rounded-full ${paymentMeta.badge} flex items-center gap-1`}>
-                            <PaymentIcon className="w-3 h-3" />
-                            {paymentMeta.label}
-                          </span>
-                        </>
+                      {!isIncome && (
+                        <span
+                          className="text-xs px-1.5 py-0.5 rounded font-bold"
+                          style={{ background: pay?.bg, color: pay?.color, fontFamily: "'Space Mono', monospace" }}
+                        >
+                          {pay?.label}
+                        </span>
                       )}
                       {item.createdAt && (
-                        <span className="text-xs text-gray-400">
-                          •{" "}
+                        <span className="text-xs text-zinc-600" style={{ fontFamily: "'Space Mono', monospace" }}>
                           {new Date(item.createdAt).toLocaleDateString("en-US", { month: "short", day: "numeric" })}
                         </span>
                       )}
                     </div>
                   </div>
 
-                  <div className="flex flex-col sm:flex-row items-end sm:items-center gap-2 sm:gap-3">
+                  {/* Amount + delete */}
+                  <div className="flex items-center gap-3 flex-shrink-0">
                     <span
-                      className={`font-bold text-lg sm:text-2xl whitespace-nowrap ${
-                        item.type === "Income" ? "text-green-600" : "text-red-600"
-                      }`}
+                      className="font-extrabold text-base sm:text-lg"
+                      style={{
+                        color: isIncome ? "#34d399" : "#f87171",
+                        fontFamily: "'Space Mono', monospace",
+                      }}
                     >
-                      {item.type === "Income" ? "+" : "-"}₹{item.amount.toLocaleString()}
+                      {isIncome ? "+" : "-"}{fmt(item.amount)}
                     </span>
-
                     <button
                       onClick={() => deleteItem(item.id)}
-                      className="p-2 text-gray-400 sm:opacity-0 group-hover:opacity-100 hover:text-red-600 hover:bg-red-100 rounded-lg transition-all"
+                      className="p-2 text-zinc-700 hover:text-red-400 opacity-0 group-hover:opacity-100 transition-all rounded-lg hover:bg-red-500/10"
                     >
-                      <Trash2 className="w-4 h-4 sm:w-5 sm:h-5" />
+                      <Trash2 className="w-4 h-4" />
                     </button>
                   </div>
                 </div>
-              </Card>
-            );
-          })}
-        </div>
-      </section>
+              );
+            })}
+          </div>
+        )}
+      </div>
 
-      {/* ---------- Financial Insights ---------- */}
+      {/* ── Financial insights ──────────────────────────────── */}
       {monthItems.length >= 5 && (
-        <Card className="bg-gradient-to-r from-indigo-500 to-purple-600 text-white">
+        <div
+          className="rounded-2xl p-5 border"
+          style={{ background: "#f59e0b0a", borderColor: "#f59e0b33" }}
+        >
           <div className="flex items-start gap-4">
-            <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-white/20 backdrop-blur-sm flex items-center justify-center flex-shrink-0">
-              <Zap className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
+            <div
+              className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0"
+              style={{ background: "#f59e0b22" }}
+            >
+              <Zap className="w-5 h-5 text-amber-400" />
             </div>
-            <div className="flex-1">
-              <h3 className="text-lg sm:text-xl font-bold mb-2">Financial Insights</h3>
-              <div className="space-y-2 text-sm sm:text-base text-white/90">
+            <div>
+              <p className="font-bold text-zinc-200 mb-2">Financial Insights</p>
+              <div className="space-y-1.5 text-sm text-zinc-400">
                 {savingsRate >= 20 && (
-                  <p>✨ Excellent! You're saving {savingsRate}% of your income. Keep up the great work!</p>
+                  <p>✨ Excellent — saving <span className="text-amber-400 font-bold">{savingsRate}%</span> of income.</p>
                 )}
                 {savingsRate >= 10 && savingsRate < 20 && (
-                  <p>💪 Good job! You're saving {savingsRate}% of your income. Try to increase it to 20% or more.</p>
+                  <p>💪 Good — saving <span className="text-amber-400 font-bold">{savingsRate}%</span>. Try to hit 20%.</p>
                 )}
                 {savingsRate < 10 && savingsRate >= 0 && (
-                  <p>⚠️ Your savings rate is {savingsRate}%. Consider reducing expenses or increasing income to save more.</p>
+                  <p>⚠️ Savings rate is <span className="text-red-400 font-bold">{savingsRate}%</span>. Consider cutting expenses.</p>
                 )}
                 {totalBalance < 0 && (
-                  <p>🚨 You're spending more than you earn this month. Review your expenses and make adjustments.</p>
+                  <p>🚨 Spending more than you earn this month.</p>
                 )}
-                {creditExpenses > income * 0.3 && (
-                  <p>💳 Your credit card spending is high ({Math.round((creditExpenses/income)*100)}% of income). Remember to pay it off next month!</p>
+                {creditExp > income * 0.3 && (
+                  <p>💳 Credit card at <span className="text-purple-400 font-bold">{Math.round((creditExp / income) * 100)}%</span> of income — remember to clear it.</p>
                 )}
-                {cashBalance < 0 && creditExpenses > 0 && (
-                  <p>⚠️ Your cash balance is negative, but you have ₹{creditExpenses.toLocaleString()} on credit card due next month.</p>
-                )}
-                {categoryBreakdown.Need > categoryBreakdown.Want + categoryBreakdown.Investment && (
-                  <p>🎯 Most spending goes to needs. This is generally healthy financial behavior.</p>
+                {catBreakdown.Need > catBreakdown.Want + catBreakdown.Investment && (
+                  <p>🎯 Most spending on needs — generally healthy.</p>
                 )}
               </div>
             </div>
           </div>
-        </Card>
+        </div>
       )}
     </div>
   );
