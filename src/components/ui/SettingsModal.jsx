@@ -1,12 +1,14 @@
 import { useEffect, useRef, useState } from "react";
 import { X, Sun, Moon, Mail, User, Check } from "lucide-react";
 import { useTheme } from "../../pages/ThemeContext";
+import { downloadAllData } from "../../utils/downloadData";
 
 export default function SettingsModal({ open, onClose }) {
   const { isDark, toggle, userName, setUserName } = useTheme();
   const [nameInput, setNameInput] = useState(userName);
   const [nameSaved, setNameSaved] = useState(false);
   const inputRef = useRef(null);
+  const [downloading, setDownloading] = useState(false);
 
   /* Sync input if userName changes externally */
   useEffect(() => { setNameInput(userName); }, [userName]);
@@ -38,6 +40,14 @@ export default function SettingsModal({ open, onClose }) {
     const body    = encodeURIComponent("Hi,\n\nHere's my feedback on Life OS:\n\n");
     window.location.href = `mailto:hello@lifeos.com?subject=${subject}&body=${body}`;
   }
+
+  function handleDownload() {         setDownloading(true);
+        setTimeout(() => {          // tiny delay so spinner renders
+         try   { downloadAllData(); }
+         catch { alert("Export failed. Make sure you have data saved."); }
+         finally { setDownloading(false); }
+        }, 80);
+     }
 
   return (
     /* Backdrop — z-50, blocks clicks on everything behind */
@@ -94,9 +104,8 @@ export default function SettingsModal({ open, onClose }) {
           </button>
         </div>
 
-        {/* Body */}
         <div className="px-6 py-5 space-y-6">
-
+ 
           {/* ── Name ── */}
           <div>
             <label
@@ -112,6 +121,7 @@ export default function SettingsModal({ open, onClose }) {
                 onChange={(e) => setNameInput(e.target.value)}
                 onKeyDown={(e) => e.key === "Enter" && saveName()}
                 placeholder="e.g. Master"
+                maxLength={15}
                 className="flex-1 rounded-xl px-4 py-2.5 text-sm outline-none transition-colors"
                 style={{
                   backgroundColor: isDark ? "#0a0a0f" : "#ffffff",
@@ -132,9 +142,17 @@ export default function SettingsModal({ open, onClose }) {
                 {nameSaved ? <><Check size={13} /> Saved</> : "Save"}
               </button>
             </div>
-            <p className="text-xs mt-2" style={{ color: isDark ? "#52525b" : "#a1a1aa" }}>
-              Shown in your dashboard greeting.
-            </p>
+            <div className="flex items-center justify-between mt-2">
+              <p className="text-xs" style={{ color: isDark ? "#52525b" : "#a1a1aa" }}>
+                Shown in your dashboard greeting.
+              </p>
+              <p className="text-xs" style={{
+                fontFamily: "'Space Mono', monospace",
+                color: nameInput.length >= 15 ? "#f87171" : isDark ? "#52525b" : "#a1a1aa",
+              }}>
+                {nameInput.length}/15
+              </p>
+            </div>
           </div>
 
           {/* ── Theme ── */}
@@ -220,6 +238,59 @@ export default function SettingsModal({ open, onClose }) {
             </p>
           </div>
         </div>
+
+        <div>
+  <label
+    className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider m-3"
+    style={{ color: "var(--accent)", fontFamily: "'Space Mono', monospace" }}
+  >
+    Export all your data
+  </label>
+ 
+  <button
+    onClick={handleDownload}
+    disabled={downloading}
+    className="w-full flex items-center justify-center gap-2 py-3 rounded-xl text-sm font-bold transition-all disabled:opacity-60"
+    style={{
+      background: downloading ? "var(--bg-base)" : "var(--bg-base)",
+      border:     "1px solid var(--border)",
+      color:      downloading ? "var(--text-faint)" : "var(--text-sub)",
+    }}
+    onMouseEnter={(e) => {
+      if (!downloading) {
+        e.currentTarget.style.borderColor = "#34d399";
+        e.currentTarget.style.color = "#34d399";
+      }
+    }}
+    onMouseLeave={(e) => {
+      e.currentTarget.style.borderColor = "var(--border)";
+      e.currentTarget.style.color = "var(--text-sub)";
+    }}
+  >
+    {downloading ? (
+      <>
+        <svg className="animate-spin w-4 h-4" viewBox="0 0 24 24" fill="none">
+          <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="3" strokeDasharray="30 70" />
+        </svg>
+        Preparing export…
+      </>
+    ) : (
+      <>
+        {/* Download icon inline so no extra import needed */}
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+          <polyline points="7 10 12 15 17 10"/>
+          <line x1="12" y1="15" x2="12" y2="3"/>
+        </svg>
+        Download all data as .xlsx
+      </>
+    )}
+  </button>
+ 
+  <p className="text-xs m-2" style={{ color: "var(--text-faint)" }}>
+    Exports diary, habits, projects, budget, links &amp; focuses into one spreadsheet.
+  </p>
+</div>
 
         {/* Footer */}
         <div

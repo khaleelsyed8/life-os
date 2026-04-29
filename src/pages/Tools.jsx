@@ -151,9 +151,20 @@ export default function Tools() {
                 <label className="text-[10px] uppercase font-bold mb-2 block tracking-widest" style={{ color: tk.textFaint, fontFamily: mono }}>Monthly Base Salary</label>
                 <div className="relative">
                   <span className="absolute left-4 top-1/2 -translate-y-1/2 text-sm font-bold" style={{ color: tk.textFaint }}>₹</span>
-                  <input type="number" value={data.inc} onChange={(e) => setInc(e.target.value)}
-                    className="w-full pl-8 pr-4 py-3 rounded-xl text-sm outline-none transition-all"
-                    style={{ background: tk.inputBg, border: `1px solid ${tk.inputBdr}`, color: tk.text }} />
+                  <input
+  type="text"
+  inputMode="numeric"
+  value={data.inc}
+  onChange={(e) => {
+    // Strip anything that isn't a digit
+    const raw = e.target.value.replace(/\D/g, "");
+    // Remove leading zeros, cap at 7 digits
+    const cleaned = raw.replace(/^0+/, "").slice(0, 7);
+    setInc(cleaned);
+  }}
+  className="w-full pl-8 pr-4 py-3 rounded-xl text-sm outline-none transition-all"
+  style={{ background: tk.inputBg, border: `1px solid ${tk.inputBdr}`, color: tk.text }}
+/>
                 </div>
               </div>
 

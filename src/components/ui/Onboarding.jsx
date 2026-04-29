@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { X, Sparkles, Settings, Pencil, Search, Moon, Check } from "lucide-react";
+import { X, Sparkles, Settings, Pencil, Search, Moon, Check, Download } from "lucide-react";
 import { useTheme } from "../../pages/ThemeContext";
 
 /* ── Design Tokens ───────────────────────────────────────────────────── */
@@ -52,13 +52,18 @@ export default function Onboarding() {
     },
     { 
       icon: Search, 
-      text: "Press Windows + K (or ⌘K) for global search across the app.",
+      text: "Press Windows + K (or Ctrl+Windows+K) for global search across the app.",
       color: "#f59e0b"
     },
     { 
       icon: Moon, 
       text: "Theme switching is now available inside the gear icon.",
       color: "#c084fc"
+    },
+    { 
+      icon: Download, 
+      text: "Download all your data to excel with a single click.",
+      color: "#fc9484"
     },
   ];
 
