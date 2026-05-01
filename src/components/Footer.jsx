@@ -212,7 +212,7 @@ export default function Footer() {
 
   return (
     <>
-      <footer style={{ backgroundColor: bgBase, borderTop: `1px solid ${borderColor}`, fontFamily: "'Syne', sans-serif", marginTop: "6rem", transition: "background-color 0.25s ease" }}>
+      <footer style={{ backgroundColor: bgBase, borderTop: `1px solid ${borderColor}`, fontFamily: "'Syne', sans-serif", transition: "background-color 0.25s ease" }}>
 
         {/* Accent strip */}
         <div style={{ height: 2, background: `linear-gradient(90deg, transparent, ${accent}44, #c084fc44, transparent)` }} />

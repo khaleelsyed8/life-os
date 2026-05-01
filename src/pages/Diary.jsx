@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Calendar, Archive, Trash2, Plus, RotateCcw, BookOpen, Pencil, Check, X } from "lucide-react";
+import { Calendar, Archive, Trash2, Plus, RotateCcw, BookOpen, Pencil, Check, X, Lock, ShieldCheck, Settings2 } from "lucide-react";
 import useLocalStorage from "../hooks/useLocalStorage";
 import { useTheme } from "./ThemeContext";
 
@@ -98,7 +98,6 @@ function EntryCard({ entry, onArchive, onUnarchive, onDelete, onUpdate, tk, arch
       onMouseEnter={(e) => { if (!editing) e.currentTarget.style.borderColor = tk.border2; }}
       onMouseLeave={(e) => { if (!editing) e.currentTarget.style.borderColor = tk.border;  }}
     >
-      {/* Top row — timestamps */}
       <div className="flex items-start justify-between gap-3 mb-3">
         <div className="flex items-center gap-2 flex-wrap">
           {entry.mood && !editing && (
@@ -126,7 +125,6 @@ function EntryCard({ entry, onArchive, onUnarchive, onDelete, onUpdate, tk, arch
         </div>
       </div>
 
-      {/* Content — read or edit */}
       {editing ? (
         <div className="space-y-3">
           <MoodPicker value={editMood} onChange={setEditMood} tk={tk} />
@@ -176,7 +174,6 @@ function EntryCard({ entry, onArchive, onUnarchive, onDelete, onUpdate, tk, arch
         </p>
       )}
 
-      {/* Action row */}
       {!editing && (
         <div
           className="flex gap-4 mt-4 pt-4"
@@ -238,6 +235,64 @@ export default function Diary() {
   const [showArchived, setShowArchived] = useState(false);
   const [deletingId,   setDeletingId]   = useState(null);
 
+  /* ── New PIN-related State ── */
+  const [savedPin, setSavedPin] = useLocalStorage("diary-archive-pin", null);
+  const [isPinModalOpen, setIsPinModalOpen] = useState(false);
+  const [pinMode, setPinMode] = useState("verify"); // "verify", "set", "change"
+  const [pinInput, setPinInput] = useState("");
+  const [oldPinInput, setOldPinInput] = useState("");
+  const [pinError, setPinError] = useState("");
+
+  /* ── PIN Functions ── */
+  const handleArchiveToggle = () => {
+    if (showArchived) {
+      setShowArchived(false);
+      return;
+    }
+    
+    if (!savedPin) {
+      setPinMode("set");
+      setIsPinModalOpen(true);
+    } else {
+      setPinMode("verify");
+      setIsPinModalOpen(true);
+    }
+  };
+
+  const handlePinSubmit = () => {
+    if (pinInput.length !== 4) {
+      setPinError("PIN must be 4 digits");
+      return;
+    }
+
+    if (pinMode === "set") {
+      setSavedPin(pinInput);
+      setShowArchived(true);
+      closePinModal();
+    } else if (pinMode === "verify") {
+      if (pinInput === savedPin) {
+        setShowArchived(true);
+        closePinModal();
+      } else {
+        setPinError("Incorrect PIN");
+      }
+    } else if (pinMode === "change") {
+      if (oldPinInput !== savedPin) {
+        setPinError("Current PIN is incorrect");
+      } else {
+        setSavedPin(pinInput);
+        closePinModal();
+      }
+    }
+  };
+
+  const closePinModal = () => {
+    setIsPinModalOpen(false);
+    setPinInput("");
+    setOldPinInput("");
+    setPinError("");
+  };
+
   /* ── CRUD ── */
   function addEntry() {
     if (!text.trim()) return;
@@ -285,19 +340,31 @@ export default function Diary() {
           </h1>
           <p className="text-sm mt-2" style={{ color: tk.textMuted }}>Write freely. No pressure.</p>
         </div>
-        <button
-          onClick={() => setShowArchived((s) => !s)}
-          className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold uppercase tracking-wider transition-all self-start sm:self-auto"
-          style={{
-            fontFamily: mono,
-            background: showArchived ? "#c084fc22" : tk.surface,
-            border:     `1px solid ${showArchived ? "#c084fc66" : tk.border}`,
-            color:      showArchived ? "#c084fc" : tk.textMuted,
-          }}
-        >
-          <Archive className="w-3.5 h-3.5" />
-          {showArchived ? "Hide archived" : "Show archived"}
-        </button>
+        <div className="flex gap-2">
+           {savedPin && (
+             <button
+                onClick={() => { setPinMode("change"); setIsPinModalOpen(true); }}
+                className="flex items-center justify-center p-2.5 rounded-xl transition-all"
+                style={{ background: tk.surface, border: `1px solid ${tk.border}`, color: tk.textFaint }}
+                title="Change Archive PIN"
+              >
+                <Settings2 className="w-4 h-4" />
+             </button>
+           )}
+          <button
+            onClick={handleArchiveToggle}
+            className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold uppercase tracking-wider transition-all self-start sm:self-auto"
+            style={{
+              fontFamily: mono,
+              background: showArchived ? "#c084fc22" : tk.surface,
+              border:     `1px solid ${showArchived ? "#c084fc66" : tk.border}`,
+              color:      showArchived ? "#c084fc" : tk.textMuted,
+            }}
+          >
+            {showArchived ? <ShieldCheck className="w-3.5 h-3.5" /> : <Lock className="w-3.5 h-3.5" />}
+            {showArchived ? "Hide archived" : "Show archived"}
+          </button>
+        </div>
       </div>
 
       {/* Stats */}
@@ -404,6 +471,83 @@ export default function Diary() {
               ))}
             </div>
           )}
+        </div>
+      )}
+
+      {/* PIN Security Modal */}
+      {isPinModalOpen && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center"
+          style={{ backgroundColor: tk.overlay, backdropFilter: "blur(6px)", WebkitBackdropFilter: "blur(6px)" }}
+          onClick={(e) => { if (e.target === e.currentTarget) closePinModal(); }}
+        >
+          <div
+            className="w-[90%] max-w-sm rounded-2xl p-6 shadow-2xl"
+            style={{ backgroundColor: tk.surface, border: `1px solid ${tk.border}`, fontFamily: sans }}
+          >
+            <div className="w-10 h-10 rounded-xl flex items-center justify-center mb-4"
+              style={{ background: "#c084fc22", border: "1px solid #c084fc44" }}>
+              <Lock className="w-5 h-5" style={{ color: "#c084fc" }} />
+            </div>
+            <h3 className="text-base font-bold mb-1" style={{ color: tk.text }}>
+              {pinMode === "set" ? "Set Archive PIN" : pinMode === "verify" ? "Enter Archive PIN" : "Change Archive PIN"}
+            </h3>
+            <p className="text-sm mb-6" style={{ color: tk.textMuted }}>
+              {pinMode === "set" ? "Protect your archived thoughts with a 4-digit code." : "Confirm your identity to proceed."}
+            </p>
+
+            <div className="space-y-4">
+              {pinMode === "change" && (
+                <div>
+                  <label className="text-[10px] uppercase tracking-widest font-bold mb-1 block" style={{ color: tk.textFaint }}>Current PIN</label>
+                  <input
+                    type="password"
+                    maxLength={4}
+                    value={oldPinInput}
+                    onChange={(e) => setOldPinInput(e.target.value.replace(/\D/g, ""))}
+                    className="w-full rounded-xl px-4 py-3 text-center text-xl tracking-[1em] outline-none transition-colors"
+                    style={{ background: tk.inputBg, border: `1px solid ${tk.border}`, color: tk.text, fontFamily: mono }}
+                    placeholder="••••"
+                    autoFocus
+                  />
+                </div>
+              )}
+              <div>
+                <label className="text-[10px] uppercase tracking-widest font-bold mb-1 block" style={{ color: tk.textFaint }}>
+                  {pinMode === "change" ? "New PIN" : "4-Digit PIN"}
+                </label>
+                <input
+                  type="password"
+                  maxLength={4}
+                  value={pinInput}
+                  onChange={(e) => setPinInput(e.target.value.replace(/\D/g, ""))}
+                  className="w-full rounded-xl px-4 py-3 text-center text-xl tracking-[1em] outline-none transition-colors"
+                  style={{ background: tk.inputBg, border: `1px solid ${tk.border}`, color: tk.text, fontFamily: mono }}
+                  placeholder="••••"
+                  autoFocus={pinMode !== "change"}
+                />
+              </div>
+              
+              {pinError && <p className="text-xs text-center font-bold" style={{ color: "#ef4444" }}>{pinError}</p>}
+
+              <div className="flex justify-end gap-3 pt-2">
+                <button
+                  onClick={closePinModal}
+                  className="px-4 py-2 text-sm rounded-xl transition-colors"
+                  style={{ border: `1px solid ${tk.border2}`, color: tk.textMuted, background: "transparent" }}
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handlePinSubmit}
+                  className="px-5 py-2 text-sm rounded-xl font-bold"
+                  style={{ background: "#c084fc", color: "#09090b" }}
+                >
+                  Confirm
+                </button>
+              </div>
+            </div>
+          </div>
         </div>
       )}
 
