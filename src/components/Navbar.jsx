@@ -1,8 +1,8 @@
 import { NavLink } from "react-router-dom";
 import { Terminal, Menu, X, Settings } from "lucide-react";
 import { useState, useEffect } from "react";
-import { useTheme } from "../../pages/ThemeContext";
-import SettingsModal from "../ui/SettingsModal";
+import { useTheme } from "../pages/ThemeContext";
+import SettingsModal from "./SettingsModal";
 
 const navItems = [
   { path: "/",           label: "Dashboard"  },

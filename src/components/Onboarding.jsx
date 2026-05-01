@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { X, Sparkles, Settings, Pencil, Search, Moon, Check, Download } from "lucide-react";
-import { useTheme } from "../../pages/ThemeContext";
+import { useTheme } from "../pages/ThemeContext";
 
 /* ── Design Tokens ───────────────────────────────────────────────────── */
 const t = (isDark) => ({

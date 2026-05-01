@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { X, Sun, Moon, Mail, User, Check } from "lucide-react";
-import { useTheme } from "../../pages/ThemeContext";
-import { downloadAllData } from "../../utils/downloadData";
+import { useTheme } from "../pages/ThemeContext";
+import { downloadAllData } from "../hooks/downloadData";
 
 export default function SettingsModal({ open, onClose }) {
   const { isDark, toggle, userName, setUserName } = useTheme();

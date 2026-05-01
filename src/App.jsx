@@ -1,10 +1,10 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { ThemeProvider, useTheme } from "./pages/ThemeContext";
-import Navbar      from "./components/layout/Navbar";
-import Footer      from "./components/layout/Footer";
-import ScratchPad  from "./components/ui/ScratchPad";
-import SearchModal from "./components/ui/SearchModal";
-import Onboarding from "./components/ui/Onboarding";
+import Navbar      from "./components/Navbar";
+import Footer      from "./components/Footer";
+import ScratchPad  from "./components/ScratchPad";
+import SearchModal from "./components/SearchModal";
+import Onboarding from "./components/Onboarding";
 
 import Dashboard  from "./pages/Dashboard";
 import Dictionary from "./pages/Dictionary";
