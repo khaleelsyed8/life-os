@@ -34,7 +34,7 @@ export default function ScratchPad() {
           style={{
             background: "var(--accent)",
             color:      "#d97706",
-            border:     "2px solid var(--accent)",
+            border:     "1px solid #d97706",
           }}
           onMouseEnter={(e) => (e.currentTarget.style.transform = "scale(1.1)")}
           onMouseLeave={(e) => (e.currentTarget.style.transform = "scale(1.0)")}
@@ -49,8 +49,9 @@ export default function ScratchPad() {
           className="fixed bottom-6 right-6 z-40 w-80 rounded-2xl shadow-2xl overflow-hidden transition-all"
           style={{
             background: "var(--bg-surface)",
-            border:     "1px solid var(--border)",
+            border:     "1px solid #d97706",
             fontFamily: "'Syne', sans-serif",
+            backdropFilter: "blur(2px)",
           }}
         >
           {/* Header */}
