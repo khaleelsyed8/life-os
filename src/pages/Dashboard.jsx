@@ -257,7 +257,7 @@ export default function Dashboard() {
           style={{ color: tk.accent, fontFamily: mono }}>
           {new Date().toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric", year: "numeric" })}
         </p>
-        <h1 className="text-5xl sm:text-7xl font-extrabold leading-none tracking-tight mb-3"
+        <h1 className="text-4xl sm:text-6xl font-extrabold leading-none tracking-tight mb-3"
           style={{ color: tk.text }}>
           {getGreeting()}{userName ? "," : ""}{userName
             ? <span style={{ color: tk.accent }}> {userName}</span>
