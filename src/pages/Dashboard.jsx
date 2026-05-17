@@ -292,8 +292,10 @@ const SpendBreakdown = ({ txs, totalInc, tk }) => {
     { key: "Debt",       color: "#fb923c", label: "Debt"        },
   ];
 
-  const totalExp = txs.filter((tx) => tx.cat !== "Income").reduce((s, tx) => s + tx.amt, 0);
-  const base = Math.max(totalExp, totalInc, 1);
+  // Must match BudgetCalc income cats exactly
+  const INCOME_CATS_SD  = ["Salary", "Income"];
+  const totalExp = txs.filter((tx) => !INCOME_CATS_SD.includes(tx.cat)).reduce((s, tx) => s + tx.amt, 0);
+  const base = Math.max(totalInc, 1);  // base = income, so bars show % of income
 
   return (
     <div className="space-y-3">
@@ -411,12 +413,15 @@ export default function Dashboard() {
       name: h.name, checked: !!(h.checks && h.checks[today]),
     }));
 
-    const baseSalary = Number(finance.inc) || 0;
-    const txs        = finance.txs || [];
-    const incomeTxs  = txs.filter((tx) => tx.cat === "Income").reduce((s, tx) => s + tx.amt, 0);
-    const totalInc   = baseSalary + incomeTxs;
-    const totalExp   = txs.filter((tx) => tx.cat !== "Income").reduce((s, tx) => s + tx.amt, 0);
-    const hasFinance = baseSalary > 0 || txs.length > 0;
+    // Income cats match BudgetCalc.jsx: Salary + Income transactions
+    // Expense cats: Need, Want, Investment, Debt
+    // No longer uses finance.inc (legacy salary field removed in BudgetCalc)
+    const INCOME_CATS  = ["Salary", "Income"];
+    const EXPENSE_CATS = ["Need", "Want", "Investment", "Debt"];
+    const txs      = (finance && finance.txs) ? finance.txs : [];
+    const totalInc = txs.filter((tx) => INCOME_CATS.includes(tx.cat)).reduce((s, tx) => s + tx.amt, 0);
+    const totalExp = txs.filter((tx) => EXPENSE_CATS.includes(tx.cat)).reduce((s, tx) => s + tx.amt, 0);
+    const hasFinance = txs.length > 0;
 
     setStats({
       totalLinks:   links.length,

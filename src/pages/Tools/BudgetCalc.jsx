@@ -5,8 +5,8 @@ import {
   Zap, CreditCard, Landmark, ArrowUpCircle,
   RefreshCw, ChevronLeft, ChevronRight, CheckCircle, AlertCircle, XCircle,
 } from "lucide-react";
-import useLocalStorage from "../hooks/useLocalStorage";
-import { useTheme } from "./ThemeContext";
+import useLocalStorage from "../../hooks/useLocalStorage";
+import { useTheme } from "../ThemeContext";
 
 /* ── Design tokens ───────────────────────────────────────────────────── */
 const t = (isDark) => ({

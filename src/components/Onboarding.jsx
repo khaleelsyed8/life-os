@@ -9,7 +9,7 @@ const t = (isDark) => ({
   border:  isDark ? "#27272a" : "#e4e4e7",
   text:    isDark ? "#f0f0f8" : "#09090b",
   muted:   isDark ? "#a1a1aa" : "#71717a",
-  accent:  isDark ? "#60a5fa" : "#3b82f6",
+  accent:  isDark ? "#f59e0b" : "#d97706",
 });
 
 const mono = "'Space Mono', monospace";
